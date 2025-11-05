@@ -131,6 +131,15 @@ _, test_index = train_test_split(np.arange(len(transaction_dates)), test_size=0.
 
 test_dates_knn = transaction_dates[test_index]
 
+# Export KNN predictions to CSV
+knn_results = pd.DataFrame({
+    'transaction_date': test_dates_knn,
+    'actual_price_ping': y_test_knn,
+    'predicted_price_ping': y_predict_knn,
+})
+knn_results['model'] = 'KNN'
+knn_results.to_csv('knn_predictions.csv', index=False)
+
 # Plot the reuslt 
 plt.figure(figsize=(12,6))
 plt.scatter(test_dates_knn, y_test_knn, color='blue', label='Actual Price', alpha=0.8)
@@ -195,6 +204,7 @@ final_model.fit(X_train_DT, y_train_DT)
 
 y_pred_DT = final_model.predict(X_test_DT)
 
+
 # Print the error metrics -> give us overall error of our prediction
 errors = demo.get_errors(y_test_DT, y_pred_DT)
 
@@ -204,6 +214,17 @@ print("Errors on test set: \n"
 
 # Plots predicted vs actual prices with respect to transaction date.
 test_dates = dataframe['transaction_date'].values[train_test_split(np.arange(len(dataframe)), test_size=0.8, random_state=42)[1]]
+
+# Export Decision Tree predictions to CSV
+dt_results = pd.DataFrame({
+    'transaction_date': test_dates,
+    'actual_price_ping': y_test_DT,
+    'predicted_price_ping': y_pred_DT
+})
+dt_results['model'] = 'Decision Tree'
+dt_results.to_csv('dt_predictions.csv', index=False)
+combined_results = pd.concat([knn_results, dt_results], ignore_index=True)
+combined_results.to_csv('model_comparison_results.csv', index=False)
 
 plt.figure(figsize=(12,6))
 plt.scatter(test_dates, y_test_DT, color='blue', label='Actual Price', alpha=0.8)
