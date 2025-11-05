@@ -23,7 +23,7 @@ y = dataframe['price_ping'].values
 
 # Plot the raw data
 plt.figure(figsize=(12,6))
-plt.scatter(X, y, color = 'blue', label = 'Actual price', alpha=0.8)
+plt.scatter(X, y, color = 'blue', label = 'Actual price', alpha=0.2)
 plt.xlabel("Transaction date (year.month)")
 plt.ylabel("Price per ping (NT$/ping)")
 plt.title("Housing Prices vs. Transaction Date")
@@ -142,8 +142,8 @@ knn_results.to_csv('knn_predictions.csv', index=False)
 
 # Plot the reuslt 
 plt.figure(figsize=(12,6))
-plt.scatter(test_dates_knn, y_test_knn, color='blue', label='Actual Price', alpha=0.8)
-plt.scatter(test_dates_knn, y_predict_knn, color='red', label='Predicted Price', alpha=0.8, marker='x')
+plt.scatter(test_dates_knn, y_test_knn, color='blue', label='Actual Price', alpha=0.2)
+plt.scatter(test_dates_knn, y_predict_knn, color='red', label='Predicted Price', alpha=0.2, marker='x')
 plt.xlabel("Transaction Date (Year.Month)")
 plt.ylabel("Price per Ping (NT$/ping)")
 plt.title("KNN Predicted Prices vs Actual Prices Over Time (Test Set)")
@@ -196,7 +196,7 @@ best_depth = depths[np.argmin(mse_list)]
 print(f"\nBest max_depth: {best_depth}, MSE: {min(mse_list):.4f}")
 
 # Trains a final model on an 80/20 train-test split using the best max_depth
-X_train_DT, X_test_DT, y_train_DT, y_test_DT = train_test_split(datas, y, test_size=0.8, random_state=42)
+X_train_DT, X_test_DT, y_train_DT, y_test_DT = train_test_split(datas, y, test_size=0.2, random_state=42)
 
 final_model = DecisionTreeRegressor(max_depth=best_depth, random_state=42)
 
@@ -213,7 +213,7 @@ print("Errors on test set: \n"
        f"RMSE: {errors['RMSE']:.2f} | MAE: {errors['MAE']:.2f} | MSE: {errors['MSE']:.2f}")
 
 # Plots predicted vs actual prices with respect to transaction date.
-test_dates = dataframe['transaction_date'].values[train_test_split(np.arange(len(dataframe)), test_size=0.8, random_state=42)[1]]
+test_dates = dataframe['transaction_date'].values[train_test_split(np.arange(len(dataframe)), test_size=0.2, random_state=42)[1]]
 
 # Export Decision Tree predictions to CSV
 dt_results = pd.DataFrame({
@@ -227,8 +227,8 @@ combined_results = pd.concat([knn_results, dt_results], ignore_index=True)
 combined_results.to_csv('model_comparison_results.csv', index=False)
 
 plt.figure(figsize=(12,6))
-plt.scatter(test_dates, y_test_DT, color='blue', label='Actual Price', alpha=0.8)
-plt.scatter(test_dates, y_pred_DT, color='red', label='Predicted Price', marker='x', alpha=0.8)
+plt.scatter(test_dates, y_test_DT, color='blue', label='Actual Price', alpha=0.2)
+plt.scatter(test_dates, y_pred_DT, color='red', label='Predicted Price', marker='x', alpha=0.2)
 plt.xlabel("Transaction Date")
 plt.ylabel("Price per Ping (NT$/ping)")
 plt.title("Decision Tree Regression: Actual vs Predicted")
@@ -293,8 +293,8 @@ test_dates = transaction_dates[test_index]
 
 # Plot the result
 plt.figure(figsize=(12,6))
-plt.scatter(test_dates, y_test_mlp, color='blue', label='Actual Price', alpha=0.8)
-plt.scatter(test_dates, y_predict_mlp, color='red', label='Predicted Price', alpha=0.8, marker='x')
+plt.scatter(test_dates, y_test_mlp, color='blue', label='Actual Price', alpha=0.2)
+plt.scatter(test_dates, y_predict_mlp, color='red', label='Predicted Price', alpha=0.2, marker='x')
 plt.xlabel("Transaction Date (Year.Month)")
 plt.ylabel("Price per Ping (NT$/ping)")
 plt.title("MLP Predicted Prices vs Actual Prices Over Time (Test Set)")
