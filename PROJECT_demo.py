@@ -124,26 +124,29 @@ print("\nKNN METRICS EVALUATION\n")
 print("Errors on test set: \n"
        f"RMSE: {errors['RMSE']:.2f} | MAE: {errors['MAE']:.2f} | MSE: {errors['MSE']:.2f}")
 
-# Extract transaction dates 
+# Extract transaction dates and original rows for the KNN test set
 transaction_dates = np.array([entry['transaction_date'] for entry in data])
 
+# Use the same splitting seed as the model so indices align with y_test_knn
 _, test_index = train_test_split(np.arange(len(transaction_dates)), test_size=0.2, random_state=42)
 
-test_dates_knn = transaction_dates[test_index]
+# Build KNN export DataFrame from the original dataframe rows corresponding to the test indices
+knn_df = dataframe.iloc[test_index].reset_index(drop=True)
+
+# Add actual / predicted prices and model label
+knn_df = knn_df[['transaction_date', 'house_age', 'distance_to_mrt', 'num_convenience_stores', 'latitude', 'longitude']].copy()
+knn_df['actual_price_ping'] = y_test_knn
+knn_df['predicted_price_ping'] = y_predict_knn
+knn_df['model'] = 'KNN'
 
 # Export KNN predictions to CSV
-knn_results = pd.DataFrame({
-    'transaction_date': test_dates_knn,
-    'actual_price_ping': y_test_knn,
-    'predicted_price_ping': y_predict_knn,
-})
-knn_results['model'] = 'KNN'
+knn_results = knn_df
 knn_results.to_csv('knn_predictions.csv', index=False)
 
 # Plot the reuslt 
 plt.figure(figsize=(12,6))
-plt.scatter(test_dates_knn, y_test_knn, color='blue', label='Actual Price', alpha=0.2)
-plt.scatter(test_dates_knn, y_predict_knn, color='red', label='Predicted Price', alpha=0.2, marker='x')
+plt.scatter(knn_results['transaction_date'], y_test_knn, color='blue', label='Actual Price', alpha=0.2)
+plt.scatter(knn_results['transaction_date'], y_predict_knn, color='red', label='Predicted Price', alpha=0.2, marker='x')
 plt.xlabel("Transaction Date (Year.Month)")
 plt.ylabel("Price per Ping (NT$/ping)")
 plt.title("KNN Predicted Prices vs Actual Prices Over Time (Test Set)")
@@ -195,7 +198,7 @@ best_depth = depths[np.argmin(mse_list)]
 
 print(f"\nBest max_depth: {best_depth}, MSE: {min(mse_list):.4f}")
 
-# Trains a final model on an 80/20 train-test split using the best max_depth
+# Trains a final model on an 20/80 train-test split using the best max_depth
 X_train_DT, X_test_DT, y_train_DT, y_test_DT = train_test_split(datas, y, test_size=0.2, random_state=42)
 
 final_model = DecisionTreeRegressor(max_depth=best_depth, random_state=42)
@@ -215,14 +218,20 @@ print("Errors on test set: \n"
 # Plots predicted vs actual prices with respect to transaction date.
 test_dates = dataframe['transaction_date'].values[train_test_split(np.arange(len(dataframe)), test_size=0.2, random_state=42)[1]]
 
+# Build Decision Tree export DataFrame from original rows for the test split
+_, test_index_dt = train_test_split(np.arange(len(dataframe)), test_size=0.2, random_state=42)
+dt_df = dataframe.iloc[test_index_dt].reset_index(drop=True)
+
+dt_df = dt_df[['transaction_date', 'house_age', 'distance_to_mrt', 'num_convenience_stores', 'latitude', 'longitude']].copy()
+dt_df['actual_price_ping'] = y_test_DT
+dt_df['predicted_price_ping'] = y_pred_DT
+dt_df['model'] = 'Decision Tree'
+
 # Export Decision Tree predictions to CSV
-dt_results = pd.DataFrame({
-    'transaction_date': test_dates,
-    'actual_price_ping': y_test_DT,
-    'predicted_price_ping': y_pred_DT
-})
-dt_results['model'] = 'Decision Tree'
+dt_results = dt_df
 dt_results.to_csv('dt_predictions.csv', index=False)
+
+# Combine for model comparison
 combined_results = pd.concat([knn_results, dt_results], ignore_index=True)
 combined_results.to_csv('model_comparison_results.csv', index=False)
 
